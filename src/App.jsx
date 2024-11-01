@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import axios from "axios";
-
+import { useEffect } from "react";
 /*
 product 
 id name quantity price
@@ -14,7 +14,9 @@ const initProduct = {
   price: 0,
 };
 
-axios.defaults.baseURL = import.meta.env.PROD || "http://localhost:8080";
+axios.defaults.baseURL = import.meta.env.PROD
+  ? location.hostname
+  : "http://localhost:8080";
 
 const getAllProductsApi = async () => {
   const { data } = await axios({
@@ -23,79 +25,60 @@ const getAllProductsApi = async () => {
   });
   return data;
 };
-
 const sellingApi = async (id) => {
   const { data } = await axios({
     method: "PUT",
     url: `/api/v1/products/${id}/selling`,
   });
-  return data;
 };
-
 const receivingApi = async (id) => {
   const { data } = await axios({
     method: "PUT",
     url: `/api/v1/products/${id}/receiving`,
   });
-  return data;
 };
-
 const addProductApi = async (product) => {
   const { data } = await axios({
     method: "POST",
     url: `/api/v1/products`,
     data: product,
   });
-  return data;
 };
 
 function App() {
   const [product, setProduct] = useState({ ...initProduct });
   const [products, setProducts] = useState([]);
-
   const getAllProducts = async () => {
     const data = await getAllProductsApi();
     setProducts([...data]);
   };
-
   useEffect(() => {
     getAllProducts();
   }, []);
-
   const onChangeHandler = (e) => {
     const { name, value } = e.target;
     setProduct({ ...product, [name]: value });
   };
-
   const addProduct = (e) => {
     e.preventDefault();
     addProductApi(product);
     setProduct({ ...initProduct });
-    // setProducts([
-    //   ...products,
-    //   { ...product, quantity: 0, id: products.length + 1 },
-    // ]);
+    // setProducts([...products, {...product, quantity:0, id: products.length+1}])
   };
-
   const addQuantity = (id) => {
     receivingApi(id);
-    const newProducts = products.map((el) =>
-      el.id === id ? { ...el, quantity: el.quantity + 1 } : el
-    );
-    setProducts(newProducts);
+    // const newProducts = products.map((el)=>el.id === id ? {...el, quantity: el.quantity+1}:el)
+    // setProducts(newProducts)
   };
-
   const sellQuantity = (id) => {
     const product = products.find((el) => el.id === id && el.quantity > 0);
     if (!product) {
       alert("재고 부족");
       return;
     }
-    sellingApi(id);
-    // const newProducts = products.map((el) =>
-    //   el.id === id ? { ...el, quantity: el.quantity - 1 } : el
-    // );
-    // setProducts(newProducts);
+    sellingApi();
+    // const newProducts = products.map((el)=>el.id === id ? {...el, quantity: el.quantity-1}:el)
+    // setProducts(newProducts)
   };
 
   return (
